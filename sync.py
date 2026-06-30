@@ -13,7 +13,7 @@ from pathlib import Path
 
 BASE      = Path(__file__).parent
 NOTE_DIR  = BASE / "note"
-HTML_FILE = BASE / "makeup-wiki.html"
+HTML_FILE = BASE / "index.html"
 
 # Mapping: ten file MD (khong co .md) --> id trong SYNC marker
 PAGES = {
@@ -135,11 +135,20 @@ def md_to_html(md_text):
             out.append('<div class="box ' + cls + '">' + inner + '</div>')
             continue
 
-        # Image ![alt](src)
+        # Image ![alt](src) - Fix: dung duong dan "imagine/"
         img_m = re.match(r'^!\[(.+?)\]\((.+?)\)$', raw)
         if img_m:
             alt = html_mod.escape(img_m.group(1))
             src = img_m.group(2)
+            
+            # Fix duong dan: 
+            # - Neu co "../Ảnh minh họa/" thi doi thanh "imagine/"
+            # - Neu chi co ten file, them "imagine/" vao truoc
+            if '../Ảnh minh họa/' in src:
+                src = src.replace('../Ảnh minh họa/', 'imagine/')
+            elif not src.startswith('imagine/') and not src.startswith('./') and not src.startswith('/') and not src.startswith('http'):
+                src = 'imagine/' + src
+            
             out.append(
                 '<div class="illus">'
                 '<img src="' + src + '" alt="' + alt + '" style="max-width:100%;border-radius:8px;">'
@@ -227,7 +236,7 @@ def sync_all(verbose=True):
     if changed:
         HTML_FILE.write_text(html, encoding='utf-8')
         if verbose:
-            print('  --> makeup-wiki.html da duoc cap nhat\n')
+            print('  --> index.html da duoc cap nhat\n')
     elif verbose:
         print('  --> Khong co thay doi\n')
 
